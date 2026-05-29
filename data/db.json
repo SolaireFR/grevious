@@ -46,14 +46,20 @@
   {
     "password": "Wesh",
     "createdAt": "2024-06-01T10:00:00Z",
-    "lastAccess": "2026-05-29T13:50:44.430Z",
+    "lastAccess": "2026-05-29T14:17:08.218Z",
     "tasks": [
       {
-        "title": "",
+        "title": "Nouvelle tâche Ouiiii",
         "completed": false,
-        "endDate": "151513210",
+        "endDate": null,
         "difficulity": 1
       }
     ]
+  },
+  {
+    "password": "Wesh2",
+    "tasks": [],
+    "createdAt": "2026-05-29T14:16:52.158Z",
+    "lastAccess": "2026-05-29T14:16:52.201Z"
   }
 ]
