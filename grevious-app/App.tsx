@@ -1,5 +1,5 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
-import './global.css';
+import './styles.js';
 
 import { useEffect, useRef, useState } from 'react';
 import { ENV } from './env.generated';
@@ -31,7 +31,6 @@ export default function App() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState('');
 
   const [password, setPassword] = useState('');
   const [localSecret, setLocalSecret] = useState<string | null>(null);
@@ -66,6 +65,8 @@ export default function App() {
     if (!Array.isArray(arr)) return [];
 
     return [...arr].sort((a, b) => {
+      if (a.completed !== b.completed) return a.completed ? 1 : -1;
+
       const aDate = a.endDate ? new Date(a.endDate).getTime() : null;
       const bDate = b.endDate ? new Date(b.endDate).getTime() : null;
 
@@ -86,7 +87,6 @@ export default function App() {
       const res = await fetch(
         `${ENV.API_URL}/tasks?password=${encodeURIComponent(pwd)}`
       );
-
       const data = await res.json();
 
       if (data.error) {
@@ -106,7 +106,9 @@ export default function App() {
 
   // ---------------- SECTION ----------------
   const createSection = async () => {
+    if (!newPassword) return;
     setLoading(true);
+    setError(null);
 
     try {
       const res = await fetch(`${ENV.API_URL}/create-section`, {
@@ -132,14 +134,14 @@ export default function App() {
     }
   };
 
-  // ---------------- EDIT ----------------
+  // ---------------- EDIT ACTIONS ----------------
   const openEdit = (item: any, index: number) => {
     setEditingIndex(index);
     setEditForm({
       title: item.title,
-      difficulity: item.difficulity,
-      endDate: item.endDate,
-      completed: item.completed,
+      difficulity: item.difficulity || 1,
+      endDate: item.endDate || null,
+      completed: !!item.completed,
     });
   };
 
@@ -147,7 +149,6 @@ export default function App() {
 
   const saveEdit = async () => {
     if (editingIndex === null || !localSecret) return;
-
     setLoading(true);
 
     try {
@@ -169,7 +170,6 @@ export default function App() {
           copy[editingIndex] = { ...copy[editingIndex], ...editForm };
           return sortTasks(copy);
         });
-
         setEditingIndex(null);
       } else {
         setError(data.error);
@@ -181,9 +181,33 @@ export default function App() {
     }
   };
 
+  const toggleCompleteExpress = async (item: any, index: number) => {
+    if (!localSecret) return;
+    const updatedStatus = !item.completed;
+    
+    setTasks(prev => {
+      const copy = [...prev];
+      copy[index] = { ...copy[index], completed: updatedStatus };
+      return sortTasks(copy);
+    });
+
+    try {
+      await fetch(`${ENV.API_URL}/task`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password: localSecret,
+          index,
+          updates: { ...item, completed: updatedStatus },
+        }),
+      });
+    } catch (e) {
+      fetchTasks(localSecret);
+    }
+  };
+
   const deleteTask = async () => {
     if (editingIndex === null || !localSecret) return;
-
     setLoading(true);
 
     try {
@@ -207,7 +231,6 @@ export default function App() {
     }
   };
 
-  // ---------------- ADD TASK ----------------
   const addTask = async () => {
     if (!localSecret) return;
 
@@ -219,6 +242,8 @@ export default function App() {
       createdAt: new Date().toISOString(),
     };
 
+    setTasks(prev => sortTasks([newTask, ...prev]));
+
     await fetch(`${ENV.API_URL}/task`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -229,127 +254,184 @@ export default function App() {
         insert: true,
       }),
     });
-
-    setTasks(prev => sortTasks([newTask, ...prev]));
   };
 
-  // ---------------- DOUBLE TAP ----------------
   const handleTap = (item: any, index: number) => {
     const now = Date.now();
-    if (now - lastTap.current < 300) openEdit(item, index);
+    if (now - lastTap.current < 300) {
+      openEdit(item, index);
+    } else {
+      toggleCompleteExpress(item, index);
+    }
     lastTap.current = now;
+  };
+
+  const handleDateChange = (_: any, selectedDate?: Date) => {
+    setShowDatePicker(Platform.OS === 'ios');
+    if (selectedDate) {
+      setEditForm(f => ({ ...f, endDate: selectedDate.toISOString().split('T')[0] }));
+    }
   };
 
   const safeTasks = Array.isArray(tasks) ? tasks : [];
 
-  // ---------------- UI ----------------
   return (
-    <View style={{ flex: 1, backgroundColor: '#f5f7fb', padding: 20, paddingTop: 60 }}>
-
+    <View className="container">
       {/* HEADER */}
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <Text style={{ fontSize: 28, fontWeight: '800' }}>📋 Tasks</Text>
-
+      <View className="header">
+        <Text className="header-title">📋 Tasks</Text>
         {localSecret && (
-          <TouchableOpacity
-            onPress={addTask}
-            style={{
-              backgroundColor: '#6366f1',
-              width: 45,
-              height: 45,
-              borderRadius: 999,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <Text style={{ color: 'white', fontSize: 24 }}>+</Text>
+          <TouchableOpacity onPress={addTask} className="btn-add">
+            <Text className="btn-add-text">+</Text>
           </TouchableOpacity>
         )}
       </View>
 
-      {/* SECTION */}
+      {error && <Text style={{ color: '#ef4444', marginBottom: 12, fontWeight: '600' }}>⚠️ {error}</Text>}
+      {loading && <ActivityIndicator color="#4f46e5" style={{ marginBottom: 12 }} />}
+
+      {/* LOGIN / CONNEXION */}
       {!localSecret ? (
-        <View style={{ marginTop: 20 }}>
+        <View className="auth-card">
           <TextInput
             value={password}
             onChangeText={setPassword}
-            placeholder="Mot de passe"
-            style={{ backgroundColor: 'white', padding: 10, borderRadius: 10 }}
+            placeholder="Mot de passe de votre section"
+            secureTextEntry
+            placeholderTextColor="#94a3b8"
+            className="input-field"
           />
 
-          <TouchableOpacity
-            onPress={() => fetchTasks(password)}
-            style={{ backgroundColor: '#6366f1', padding: 12, borderRadius: 10, marginTop: 10 }}
-          >
-            <Text style={{ color: 'white', textAlign: 'center' }}>Charger</Text>
+          <TouchableOpacity onPress={() => fetchTasks(password)} className="btn-primary">
+            <Text className="btn-primary-text">Charger l'espace</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => setCreatingSection(true)}>
-            <Text style={{ textAlign: 'center', marginTop: 10 }}>Créer section</Text>
+          <TouchableOpacity onPress={() => setCreatingSection(!creatingSection)}>
+            <Text className="text-link">
+              {creatingSection ? "Annuler" : "Créer une nouvelle section"}
+            </Text>
           </TouchableOpacity>
 
           {creatingSection && (
-            <View style={{ marginTop: 10 }}>
+            <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: '#e2e8f0' }}>
               <TextInput
                 value={newPassword}
                 onChangeText={setNewPassword}
-                placeholder="nouvelle section"
-                style={{ backgroundColor: 'white', padding: 10, borderRadius: 10 }}
+                placeholder="Nom de la nouvelle clé"
+                placeholderTextColor="#94a3b8"
+                className="input-field"
               />
-
-              <TouchableOpacity
-                onPress={createSection}
-                style={{ backgroundColor: 'green', padding: 10, borderRadius: 10, marginTop: 10 }}
-              >
-                <Text style={{ color: 'white', textAlign: 'center' }}>Créer</Text>
+              <TouchableOpacity onPress={createSection} className="btn-primary" style={{ backgroundColor: '#10b981' }}>
+                <Text className="btn-primary-text">Générer l'espace</Text>
               </TouchableOpacity>
             </View>
           )}
         </View>
       ) : (
-        <View style={{ marginVertical: 10 }}>
-          <Text>Section: {localSecret}</Text>
-
-          <TouchableOpacity onPress={() => {
-            setLocalSecret(null);
-            setTasks([]);
-          }}>
-            <Text style={{ color: 'red' }}>Changer section</Text>
+        <View className="section-banner">
+          <Text className="section-text">Clé : {localSecret}</Text>
+          <TouchableOpacity onPress={() => { setLocalSecret(null); setTasks([]); }}>
+            <Text className="section-logout">Déconnexion</Text>
           </TouchableOpacity>
         </View>
       )}
 
-      {/* LIST */}
+      {/* LISTE DES TÂCHES */}
       <FlatList
         data={safeTasks}
         keyExtractor={(_, i) => i.toString()}
-        renderItem={({ item, index }) =>
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item, index }: { item: any, index: number }) =>
           editingIndex === index ? (
-            <View style={{ backgroundColor: 'white', padding: 12, borderRadius: 12 }}>
+            /* --- ETAT MODIFICATION --- */
+            <View className="edit-card">
               <TextInput
                 value={editForm.title}
                 onChangeText={t => setEditForm(f => ({ ...f, title: t }))}
+                className="input-field"
+                style={{ marginBottom: 6 }}
               />
 
-              <TouchableOpacity onPress={saveEdit}>
-                <Text>💾 Save</Text>
-              </TouchableOpacity>
+              {/* Ligne Difficulté */}
+              <View className="edit-row">
+                <Text className="inline-label">Difficulté</Text>
+                <View className="difficulty-container">
+                  {[1, 2, 3, 4, 5].map(num => (
+                    <TouchableOpacity
+                      key={num}
+                      onPress={() => setEditForm(f => ({ ...f, difficulity: num }))}
+                      className={`diff-dot ${editForm.difficulity === num ? 'diff-dot-active' : ''}`}
+                    >
+                      <Text className={`diff-dot-text ${editForm.difficulity === num ? 'diff-dot-text-active' : ''}`}>
+                        {num}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
 
-              <TouchableOpacity onPress={deleteTask}>
-                <Text>🗑 Delete</Text>
-              </TouchableOpacity>
+              {/* Ligne Date de fin */}
+              <View className="edit-row">
+                <Text className="inline-label">Échéance</Text>
+                <TouchableOpacity onPress={() => setShowDatePicker(true)} className="date-trigger">
+                  <Text className="date-trigger-text">
+                    {editForm.endDate ? editForm.endDate : 'Définir une date'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
 
-              <TouchableOpacity onPress={closeEdit}>
-                <Text>❌ Cancel</Text>
-              </TouchableOpacity>
+              {showDatePicker && (
+                <DateTimePicker
+                  value={editForm.endDate ? new Date(editForm.endDate) : new Date()}
+                  mode="date"
+                  display="default"
+                  onChange={handleDateChange}
+                />
+              )}
+
+              {/* Boutons d'actions du formulaire */}
+              <View className="action-row">
+                <TouchableOpacity onPress={deleteTask}>
+                  <Text className="btn-action-text" style={{ color: '#ef4444' }}>Supprimer</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={closeEdit}>
+                  <Text className="btn-action-text" style={{ color: '#64748b' }}>Annuler</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={saveEdit}>
+                  <Text className="btn-action-text" style={{ color: '#4f46e5' }}>Enregistrer</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           ) : (
-            <Pressable onPress={() => handleTap(item, index)} onLongPress={() => openEdit(item, index)}>
-              <View style={{ backgroundColor: 'white', padding: 12, borderRadius: 12, marginBottom: 10 }}>
-                <Text style={{ fontWeight: '700' }}>{item.title}</Text>
-                <Text>{item.completed ? '✅' : '🕒'}</Text>
-                <Text>⭐ {item.difficulity}/10</Text>
-                <Text>📅 {item.endDate || 'Aucune'}</Text>
+            /* --- ETAT AFFICHAGE COMPACT --- */
+            <Pressable 
+              onPress={() => handleTap(item, index)} 
+              onLongPress={() => openEdit(item, index)}
+            >
+              <View className="task-card">
+                <View className="task-left">
+                  {/* Case à cocher */}
+                  <View className={`checkbox ${item.completed ? 'checkbox-checked' : ''}`}>
+                    {item.completed && <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>✓</Text>}
+                  </View>
+                  <Text 
+                    numberOfLines={1} 
+                    className={`task-title ${item.completed ? 'task-title-done' : ''}`}
+                  >
+                    {item.title}
+                  </Text>
+                </View>
+
+                <View className="task-right">
+                  {item.endDate && (
+                    <Text className="task-date">
+                      {item.endDate.split('-').reverse().slice(0, 2).join('/')}
+                    </Text>
+                  )}
+                  <View className="badge-difficulty">
+                    <Text className="badge-text">⭐ {item.difficulity || 1}</Text>
+                  </View>
+                </View>
               </View>
             </Pressable>
           )

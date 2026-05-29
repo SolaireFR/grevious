@@ -14,3 +14,260 @@ body {
   background: #ffffff;
   color: #111111;
 }
+
+/* --- LAYOUT & CONTAINERS --- */
+.container {
+  flex: 1;
+  background-color: #f8fafc;
+  padding: 20px;
+  padding-top: 60px;
+}
+
+.header {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.header-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+}
+
+/* --- BUTTONS --- */
+.btn-primary {
+  background-color: #4f46e5;
+  padding: 12px;
+  border-radius: 12px;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary-text {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.btn-add {
+  background-color: #4f46e5;
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+  justify-content: center;
+  align-items: center;
+  elevation: 2;
+  shadow-color: #4f46e5;
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.2;
+  shadow-radius: 6px;
+}
+
+.btn-add-text {
+  color: #ffffff;
+  fontSize: 24px;
+  font-weight: 300;
+  margin-top: -2px;
+}
+
+/* --- AUTH / AUTH SECTIONS --- */
+.auth-card {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 16px;
+  border-width: 1px;
+  border-color: #e2e8f0;
+  margin-bottom: 20px;
+}
+
+.input-field {
+  background-color: #f1f5f9;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 15px;
+  color: #0f172a;
+  margin-bottom: 12px;
+  border-width: 1px;
+  border-color: #e2e8f0;
+}
+
+.text-link {
+  color: #64748b;
+  text-align: center;
+  font-size: 14px;
+  margin-top: 12px;
+  text-decoration-line: underline;
+}
+
+.section-banner {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #e0f2fe;
+  padding: 10px 16px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+.section-text {
+  color: #0369a1;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.section-logout {
+  color: #ef4444;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* --- TASKS (COMPACT DESIGN) --- */
+.task-card {
+  background-color: #ffffff;
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  border-width: 1px;
+  border-color: #e2e8f0;
+}
+
+.task-left {
+  flex-direction: row;
+  align-items: center;
+  flex: 1;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border-width: 2px;
+  border-color: #cbd5e1;
+  justify-content: center;
+  align-items: center;
+  margin-right: 12px;
+}
+
+.checkbox-checked {
+  background-color: #10b981;
+  border-color: #10b981;
+}
+
+.task-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: #1e293b;
+  flex: 1;
+}
+
+.task-title-done {
+  text-decoration-line: line-through;
+  color: #94a3b8;
+}
+
+.task-right {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.badge-difficulty {
+  background-color: #f1f5f9;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.badge-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.task-date {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* --- EDIT FORM (MODERN & INLINE) --- */
+.edit-card {
+  background-color: #ffffff;
+  padding: 16px;
+  border-radius: 14px;
+  margin-bottom: 12px;
+  border-width: 1px;
+  border-color: #6366f1;
+}
+
+.edit-row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  gap: 8px;
+}
+
+.inline-label {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.difficulty-container {
+  flex-direction: row;
+  gap: 4px;
+}
+
+.diff-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background-color: #f1f5f9;
+  justify-content: center;
+  align-items: center;
+}
+
+.diff-dot-active {
+  background-color: #6366f1;
+}
+
+.diff-dot-text {
+  font-size: 11px;
+  color: #475569;
+}
+
+.diff-dot-text-active {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.date-trigger {
+  background-color: #f1f5f9;
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
+.date-trigger-text {
+  font-size: 12px;
+  color: #475569;
+}
+
+.action-row {
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top-width: 1px;
+  border-top-color: #f1f5f9;
+}
+
+.btn-action-text {
+  font-size: 14px;
+  font-weight: 600;
+}
