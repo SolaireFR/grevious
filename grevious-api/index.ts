@@ -10,19 +10,24 @@ const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
 
 import fs from 'fs';
 
-// Fonction pour lire les tâches depuis le fichier JSON
-function readTasks() {
+// Fonction pour lire l'objet complet depuis le fichier JSON
+function readDB() {
   try {
     const absPath = '/data/db.json';
     if (!fs.existsSync(absPath)) {
-      // Si le fichier n'existe pas, retourne un tableau vide
-      return [];
+      // Si le fichier n'existe pas, retourne un objet vide
+      return { password: '', tasks: [] };
     }
     const data = fs.readFileSync(absPath, 'utf8');
-    return JSON.parse(data);
+    const obj = JSON.parse(data);
+    // Normalisation minimale
+    return {
+      password: obj.password || '',
+      tasks: Array.isArray(obj.tasks) ? obj.tasks : []
+    };
   } catch (e) {
     console.error('Erreur lecture db.json:', e);
-    return [];
+    return { password: '', tasks: [] };
   }
 }
 
@@ -39,8 +44,8 @@ app.get('/', (c) => {
 // Endpoint pour fournir une liste de tâches mock
 // Endpoint pour fournir la liste des tâches depuis le fichier JSON
 app.get('/tasks', (c) => {
-  const tasks = readTasks();
-  return c.json({ tasks });
+  const db = readDB();
+  return c.json({ tasks: db.tasks });
 });
 
 // Lancement du serveur sur le port défini par la variable d'environnement
