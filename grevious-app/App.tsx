@@ -3,6 +3,7 @@ import './global.css';
 
 import { useEffect, useState } from 'react';
 import { ENV } from './env.generated';
+
 import { Text, View, ActivityIndicator, FlatList, TextInput, TouchableOpacity } from 'react-native';
 
 export default function App() {
@@ -13,7 +14,26 @@ export default function App() {
   const [creatingSection, setCreatingSection] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [localSecret, setLocalSecret] = useState<string | null>(null);
 
+
+  // Charger le secret depuis le localStorage au démarrage et charger les tâches si présent
+  useEffect(() => {
+    const secret = typeof window !== 'undefined' ? window.localStorage.getItem('grevious_secret') : null;
+    if (secret) {
+      setLocalSecret(secret);
+      setPassword(secret);
+      fetchTasks(secret);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Sauvegarder le secret dans le localStorage quand il change (connexion ou création)
+  useEffect(() => {
+    if (localSecret && typeof window !== 'undefined') {
+      window.localStorage.setItem('grevious_secret', localSecret);
+    }
+  }, [localSecret]);
   const fetchTasks = (pwd: string) => {
     setLoading(true);
     setError(null);
@@ -26,6 +46,7 @@ export default function App() {
           setTasks(null);
         } else {
           setTasks(data.tasks);
+          setLocalSecret(pwd); // Sauvegarde le secret si succès
         }
         setLoading(false);
       })
@@ -51,6 +72,7 @@ export default function App() {
           setCreatingSection(false);
           setPassword(newPassword);
           setNewPassword('');
+          setLocalSecret(newPassword); // Sauvegarde le secret créé
         } else {
           setError(data.error || 'Erreur lors de la création');
         }
@@ -61,6 +83,7 @@ export default function App() {
         setLoading(false);
       });
   };
+
 
   // Optionnel : auto-fetch si password par défaut (pour dev)
   // useEffect(() => { if (password) fetchTasks(password); }, [password]);
@@ -125,34 +148,63 @@ export default function App() {
         </View>
       ) : (
         <View style={{ marginBottom: 16, width: 300 }}>
-          <Text style={{ marginBottom: 4, color: '#222' }}>Mot de passe :</Text>
-          <TextInput
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-            style={{
-              width: '100%',
-              padding: 8,
-              borderRadius: 4,
-              borderWidth: 1,
-              borderColor: '#ccc',
-              marginBottom: 8
-            }}
-            placeholder="Entrer le mot de passe"
-          />
-          <TouchableOpacity
-            onPress={() => fetchTasks(password)}
-            style={{
-              padding: 8,
-              borderRadius: 4,
-              backgroundColor: loading || !password ? '#888' : '#111',
-              alignItems: 'center',
-              width: '100%'
-            }}
-            disabled={loading || !password}
-          >
-            <Text style={{ color: '#fff' }}>Charger les tâches</Text>
-          </TouchableOpacity>
+          <View>
+            {localSecret ? (
+              <>
+                <Text style={{ marginBottom: 4, color: '#222' }}>Section chargée :</Text>
+                <View style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginBottom: 8,
+                  justifyContent: 'space-between',
+                }}>
+                  <Text style={{ color: '#111', fontWeight: 'bold', flex: 1 }}>{localSecret}</Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setLocalSecret(null);
+                      setPassword('');
+                      setTasks(null);
+                      if (typeof window !== 'undefined') window.localStorage.removeItem('grevious_secret');
+                    }}
+                    style={{ marginLeft: 8, padding: 4, backgroundColor: '#eee', borderRadius: 4 }}
+                  >
+                    <Text style={{ color: '#111' }}>Changer de section</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            ) : (
+              <>
+                <Text style={{ marginBottom: 4, color: '#222' }}>Mot de passe :</Text>
+                <TextInput
+                  secureTextEntry
+                  value={password}
+                  onChangeText={setPassword}
+                  style={{
+                    width: '100%',
+                    padding: 8,
+                    borderRadius: 4,
+                    borderWidth: 1,
+                    borderColor: '#ccc',
+                    marginBottom: 8
+                  }}
+                  placeholder="Entrer le mot de passe"
+                />
+                <TouchableOpacity
+                  onPress={() => fetchTasks(password)}
+                  style={{
+                    padding: 8,
+                    borderRadius: 4,
+                    backgroundColor: loading || !password ? '#888' : '#111',
+                    alignItems: 'center',
+                    width: '100%'
+                  }}
+                  disabled={loading || !password}
+                >
+                  <Text style={{ color: '#fff' }}>Charger les tâches</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
           <TouchableOpacity
             onPress={() => { setCreatingSection(true); setError(null); setSuccessMsg(''); }}
             style={{
@@ -183,10 +235,10 @@ export default function App() {
                 {item.completed ? 'Terminée' : 'À faire'}
               </Text>
               <Text style={{ color: '#555', marginBottom: 4 }}>
-                Difficulté : {typeof item.difficulity === 'number' ? item.difficulity : 'N/A'} / 10
+                {`Difficulté : ${typeof item.difficulity === 'number' ? item.difficulity : 'N/A'} / 10`}
               </Text>
               <Text style={{ color: '#555' }}>
-                Fin : {item.endDate ? new Date(item.endDate).toLocaleString() : 'Non définie'}
+                {`Fin : ${item.endDate ? new Date(item.endDate).toLocaleString() : 'Non définie'}`}
               </Text>
             </View>
           )}

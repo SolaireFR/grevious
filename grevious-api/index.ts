@@ -11,7 +11,15 @@ const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
 import fs from 'fs';
 import path from 'path';
 // Fonction pour écrire la liste des sessions dans le fichier JSON
-function writeDB(sessions: { password: string, tasks: any[] }[]) {
+// Ajout des champs createdAt et lastAccess dans la session
+type Session = {
+  password: string,
+  tasks: any[],
+  createdAt: string,
+  lastAccess: string
+};
+
+function writeDB(sessions: Session[]) {
   try {
     const absPath = '/data/db.json';
     fs.writeFileSync(absPath, JSON.stringify(sessions, null, 2), 'utf8');
@@ -23,7 +31,7 @@ function writeDB(sessions: { password: string, tasks: any[] }[]) {
 }
 
 // Fonction pour lire la liste des sessions depuis le fichier JSON
-function readDB(): { password: string, tasks: any[] }[] {
+function readDB(): Session[] {
   try {
     const absPath = '/data/db.json';
     if (!fs.existsSync(absPath)) {
@@ -57,11 +65,14 @@ app.get('/tasks', (c) => {
   if (!password || typeof password !== 'string') {
     return c.json({ error: 'Mot de passe requis' }, 401);
   }
-  const session = sessions.find(s => s.password === password);
-  if (!session) {
+  const sessionIndex = sessions.findIndex(s => s.password === password);
+  if (sessionIndex === -1) {
     return c.json({ error: 'Mot de passe invalide' }, 401);
   }
-  return c.json({ tasks: session.tasks });
+  // Met à jour le champ lastAccess
+  sessions[sessionIndex].lastAccess = new Date().toISOString();
+  writeDB(sessions);
+  return c.json({ tasks: sessions[sessionIndex].tasks });
 });
 
 // Endpoint pour créer une nouvelle section (nouveau mot de passe, reset tâches)
@@ -77,7 +88,8 @@ app.post('/create-section', async (c) => {
     if (sessions.find(s => s.password === password)) {
       return c.json({ error: 'Ce mot de passe existe déjà' }, 400);
     }
-    sessions.push({ password, tasks: [] });
+    const now = new Date().toISOString();
+    sessions.push({ password, tasks: [], createdAt: now, lastAccess: now });
     const ok = writeDB(sessions);
     if (!ok) {
       return c.json({ error: 'Erreur lors de la création' }, 500);

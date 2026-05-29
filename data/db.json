@@ -1,6 +1,8 @@
 [
   {
     "password": "supersecret",
+    "createdAt": "2024-06-01T10:00:00Z",
+    "lastAccess": "2024-06-01T10:00:00Z",
     "tasks": [
       {
         "title": "Acheter des oeufs",
@@ -24,6 +26,8 @@
   },
   {
     "password": "secretsuper",
+    "createdAt": "2024-06-01T10:00:00Z",
+    "lastAccess": "2024-06-01T10:00:00Z",
     "tasks": [
       {
         "title": "Acheter des oeufs",
@@ -41,6 +45,8 @@
   },
   {
     "password": "Wesh",
+    "createdAt": "2024-06-01T10:00:00Z",
+    "lastAccess": "2026-05-29T13:12:46.471Z",
     "tasks": [
       {
         "title": "Acheter des oeufs",
