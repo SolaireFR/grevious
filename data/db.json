@@ -1,23 +1,53 @@
-{
-  "password": "supersecret",
-  "tasks": [
-    {
-      "title": "Acheter des oeufs",
-      "completed": false,
-      "endDate": "2026-06-01T12:00:00Z",
-      "difficulity": 2
-    },
-    {
-      "title": "Lire un livre",
-      "completed": true,
-      "endDate": "2026-05-20T18:00:00Z",
-      "difficulity": 4
-    },
-    {
-      "title": "Écrire du code",
-      "completed": false,
-      "endDate": null,
-      "difficulity": 7
-    }
-  ]
-}
+[
+  {
+    "password": "supersecret",
+    "tasks": [
+      {
+        "title": "Acheter des oeufs",
+        "completed": false,
+        "endDate": "2026-06-01T12:00:00Z",
+        "difficulity": 2
+      },
+      {
+        "title": "Lire un livre",
+        "completed": true,
+        "endDate": "2026-05-20T18:00:00Z",
+        "difficulity": 4
+      },
+      {
+        "title": "Écrire du code",
+        "completed": false,
+        "endDate": null,
+        "difficulity": 7
+      }
+    ]
+  },
+  {
+    "password": "secretsuper",
+    "tasks": [
+      {
+        "title": "Acheter des oeufs",
+        "completed": false,
+        "endDate": "2026-06-01T12:00:00Z",
+        "difficulity": 2
+      },
+      {
+        "title": "Lire un livre",
+        "completed": true,
+        "endDate": "2026-05-20T18:00:00Z",
+        "difficulity": 4
+      }
+    ]
+  },
+  {
+    "password": "Wesh",
+    "tasks": [
+      {
+        "title": "Acheter des oeufs",
+        "completed": false,
+        "endDate": "2026-06-01T12:00:00Z",
+        "difficulity": 2
+      }
+    ]
+  }
+]
