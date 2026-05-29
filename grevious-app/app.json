@@ -1,0 +1,9 @@
+{
+  "expo": {
+    "name": "grevious-app",
+    "slug": "grevious-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic"
+  }
+}

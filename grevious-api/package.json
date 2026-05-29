@@ -1,0 +1,21 @@
+{
+  "name": "grevious-api",
+  "version": "1.0.0",
+  "description": "Api de l'application Grevious",
+  "license": "ISC",
+  "author": "Morgan SECRETIN",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsx --watch index.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.0.4",
+    "hono": "^4.12.23"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "tsx": "^4.22.3",
+    "typescript": "^6.0.3"
+  }
+}
