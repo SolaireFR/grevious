@@ -1,0 +1,20 @@
+services:
+  api:
+    container_name: grevious-api
+    build:
+      context: ./grevious-api
+    ports:
+      - "3000:3000"
+
+  app:
+    container_name: grevious-app
+    build:
+      context: ./grevious-app
+    environment:
+      API_URL: http://localhost:3000
+      APP_ENV: production
+    ports:
+      - "19006:19006"
+      - "8081:8081"
+    depends_on:
+      - api

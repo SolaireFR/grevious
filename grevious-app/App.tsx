@@ -2,6 +2,7 @@ import './global.css';
 
 
 import { useEffect, useState } from 'react';
+import { ENV } from './env.generated';
 import { Text, View, ActivityIndicator, FlatList } from 'react-native';
 
 export default function App() {
@@ -10,7 +11,7 @@ export default function App() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:3000/tasks')
+    fetch(`${ENV.API_URL}/tasks`)
       .then((res) => {
         if (!res.ok) throw new Error('Erreur lors du chargement');
         return res.json();
