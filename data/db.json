@@ -1,0 +1,5 @@
+[
+  { "id": 1, "title": "Acheter des oeufs", "completed": false },
+  { "id": 2, "title": "Lire un livre", "completed": true },
+  { "id": 3, "title": "Écrire du code", "completed": false }
+]
