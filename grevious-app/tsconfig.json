@@ -6,7 +6,7 @@
     "moduleResolution": "bundler", /* Indique à TS que c'est Metro/Webpack qui gère les imports */
     "paths": {
       "@/*": [
-        "./*"
+        "./*",
       ],
       "@/assets/*": [
         "./assets/*"

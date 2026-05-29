@@ -1,6 +1,4 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
-import './styles.js';
-
 import { useEffect, useRef, useState } from 'react';
 import { ENV } from './env.generated';
 
@@ -9,6 +7,7 @@ import {
   FlatList,
   Platform,
   Pressable,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -276,62 +275,62 @@ export default function App() {
   const safeTasks = Array.isArray(tasks) ? tasks : [];
 
   return (
-    <View className="container">
+    <View style={styles.container}>
       {/* HEADER */}
-      <View className="header">
-        <Text className="header-title">📋 Tasks</Text>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>📋 Tasks</Text>
         {localSecret && (
-          <TouchableOpacity onPress={addTask} className="btn-add">
-            <Text className="btn-add-text">+</Text>
+          <TouchableOpacity onPress={addTask} style={styles.btnAdd}>
+            <Text style={styles.btnAddText}>+</Text>
           </TouchableOpacity>
         )}
       </View>
 
-      {error && <Text style={{ color: '#ef4444', marginBottom: 12, fontWeight: '600' }}>⚠️ {error}</Text>}
+      {error && <Text style={styles.errorText}>⚠️ {error}</Text>}
       {loading && <ActivityIndicator color="#4f46e5" style={{ marginBottom: 12 }} />}
 
       {/* LOGIN / CONNEXION */}
       {!localSecret ? (
-        <View className="auth-card">
+        <View style={styles.authCard}>
           <TextInput
             value={password}
             onChangeText={setPassword}
             placeholder="Mot de passe de votre section"
             secureTextEntry
             placeholderTextColor="#94a3b8"
-            className="input-field"
+            style={styles.inputField}
           />
 
-          <TouchableOpacity onPress={() => fetchTasks(password)} className="btn-primary">
-            <Text className="btn-primary-text">Charger l'espace</Text>
+          <TouchableOpacity onPress={() => fetchTasks(password)} style={styles.btnPrimary}>
+            <Text style={styles.btnPrimaryText}>Charger l'espace</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => setCreatingSection(!creatingSection)}>
-            <Text className="text-link">
+            <Text style={styles.textLink}>
               {creatingSection ? "Annuler" : "Créer une nouvelle section"}
             </Text>
           </TouchableOpacity>
 
           {creatingSection && (
-            <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: '#e2e8f0' }}>
+            <View style={styles.authDivider}>
               <TextInput
                 value={newPassword}
                 onChangeText={setNewPassword}
                 placeholder="Nom de la nouvelle clé"
                 placeholderTextColor="#94a3b8"
-                className="input-field"
+                style={styles.inputField}
               />
-              <TouchableOpacity onPress={createSection} className="btn-primary" style={{ backgroundColor: '#10b981' }}>
-                <Text className="btn-primary-text">Générer l'espace</Text>
+              <TouchableOpacity onPress={createSection} style={[styles.btnPrimary, { backgroundColor: '#10b981' }]}>
+                <Text style={styles.btnPrimaryText}>Générer l'espace</Text>
               </TouchableOpacity>
             </View>
           )}
         </View>
       ) : (
-        <View className="section-banner">
-          <Text className="section-text">Clé : {localSecret}</Text>
+        <View style={styles.sectionBanner}>
+          <Text style={styles.sectionText}>Clé : {localSecret}</Text>
           <TouchableOpacity onPress={() => { setLocalSecret(null); setTasks([]); }}>
-            <Text className="section-logout">Déconnexion</Text>
+            <Text style={styles.sectionLogout}>Déconnexion</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -343,26 +342,31 @@ export default function App() {
         showsVerticalScrollIndicator={false}
         renderItem={({ item, index }: { item: any, index: number }) =>
           editingIndex === index ? (
-            /* --- ETAT MODIFICATION --- */
-            <View className="edit-card">
+            /* --- ÉTAT MODIFICATION --- */
+            <View style={styles.editCard}>
               <TextInput
                 value={editForm.title}
                 onChangeText={t => setEditForm(f => ({ ...f, title: t }))}
-                className="input-field"
-                style={{ marginBottom: 6 }}
+                style={[styles.inputField, { marginBottom: 6 }]}
               />
 
               {/* Ligne Difficulté */}
-              <View className="edit-row">
-                <Text className="inline-label">Difficulté</Text>
-                <View className="difficulty-container">
+              <View style={styles.editRow}>
+                <Text style={styles.inlineLabel}>Difficulté</Text>
+                <View style={styles.difficultyContainer}>
                   {[1, 2, 3, 4, 5].map(num => (
                     <TouchableOpacity
                       key={num}
                       onPress={() => setEditForm(f => ({ ...f, difficulity: num }))}
-                      className={`diff-dot ${editForm.difficulity === num ? 'diff-dot-active' : ''}`}
+                      style={[
+                        styles.diffDot,
+                        editForm.difficulity === num && styles.diffDotActive
+                      ]}
                     >
-                      <Text className={`diff-dot-text ${editForm.difficulity === num ? 'diff-dot-text-active' : ''}`}>
+                      <Text style={[
+                        styles.diffDotText,
+                        editForm.difficulity === num && styles.diffDotTextActive
+                      ]}>
                         {num}
                       </Text>
                     </TouchableOpacity>
@@ -371,10 +375,10 @@ export default function App() {
               </View>
 
               {/* Ligne Date de fin */}
-              <View className="edit-row">
-                <Text className="inline-label">Échéance</Text>
-                <TouchableOpacity onPress={() => setShowDatePicker(true)} className="date-trigger">
-                  <Text className="date-trigger-text">
+              <View style={styles.editRow}>
+                <Text style={styles.inlineLabel}>Échéance</Text>
+                <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateTrigger}>
+                  <Text style={styles.dateTriggerText}>
                     {editForm.endDate ? editForm.endDate : 'Définir une date'}
                   </Text>
                 </TouchableOpacity>
@@ -390,46 +394,46 @@ export default function App() {
               )}
 
               {/* Boutons d'actions du formulaire */}
-              <View className="action-row">
+              <View style={styles.actionRow}>
                 <TouchableOpacity onPress={deleteTask}>
-                  <Text className="btn-action-text" style={{ color: '#ef4444' }}>Supprimer</Text>
+                  <Text style={[styles.btnActionText, { color: '#ef4444' }]}>Supprimer</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={closeEdit}>
-                  <Text className="btn-action-text" style={{ color: '#64748b' }}>Annuler</Text>
+                  <Text style={[styles.btnActionText, { color: '#64748b' }]}>Annuler</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={saveEdit}>
-                  <Text className="btn-action-text" style={{ color: '#4f46e5' }}>Enregistrer</Text>
+                  <Text style={[styles.btnActionText, { color: '#4f46e5' }]}>Enregistrer</Text>
                 </TouchableOpacity>
               </View>
             </View>
           ) : (
-            /* --- ETAT AFFICHAGE COMPACT --- */
+            /* --- ÉTAT AFFICHAGE COMPACT --- */
             <Pressable 
               onPress={() => handleTap(item, index)} 
               onLongPress={() => openEdit(item, index)}
             >
-              <View className="task-card">
-                <View className="task-left">
+              <View style={styles.taskCard}>
+                <View style={styles.taskLeft}>
                   {/* Case à cocher */}
-                  <View className={`checkbox ${item.completed ? 'checkbox-checked' : ''}`}>
-                    {item.completed && <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>✓</Text>}
+                  <View style={[styles.checkbox, item.completed && styles.checkboxChecked]}>
+                    {item.completed && <Text style={styles.checkboxCheckmark}>✓</Text>}
                   </View>
                   <Text 
                     numberOfLines={1} 
-                    className={`task-title ${item.completed ? 'task-title-done' : ''}`}
+                    style={[styles.taskTitle, item.completed && styles.taskTitleDone]}
                   >
                     {item.title}
                   </Text>
                 </View>
 
-                <View className="task-right">
+                <View style={styles.taskRight}>
                   {item.endDate && (
-                    <Text className="task-date">
+                    <Text style={styles.taskDate}>
                       {item.endDate.split('-').reverse().slice(0, 2).join('/')}
                     </Text>
                   )}
-                  <View className="badge-difficulty">
-                    <Text className="badge-text">⭐ {item.difficulity || 1}</Text>
+                  <View style={styles.badgeDifficulty}>
+                    <Text style={styles.badgeText}>⭐ {item.difficulity || 1}</Text>
                   </View>
                 </View>
               </View>
@@ -440,3 +444,250 @@ export default function App() {
     </View>
   );
 }
+
+// ---------------- STYLES NATIFS REACT NATIVE ----------------
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+    padding: 20,
+    paddingTop: 60,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#0f172a',
+    letterSpacing: -0.5,
+  },
+  errorText: {
+    color: '#ef4444', 
+    marginBottom: 12, 
+    fontWeight: '600'
+  },
+  btnPrimary: {
+    backgroundColor: '#4f46e5',
+    padding: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  btnPrimaryText: {
+    color: '#ffffff',
+    fontWeight: '600',
+    fontSize: 15,
+  },
+  btnAdd: {
+    backgroundColor: '#4f46e5',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#4f46e5',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  btnAddText: {
+    color: '#ffffff',
+    fontSize: 24,
+    fontWeight: '300',
+    marginTop: -2,
+  },
+  authCard: {
+    backgroundColor: '#ffffff',
+    padding: 20,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    marginBottom: 20,
+  },
+  inputField: {
+    backgroundColor: '#f1f5f9',
+    padding: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    fontSize: 15,
+    color: '#0f172a',
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  textLink: {
+    color: '#64748b',
+    textAlign: 'center',
+    fontSize: 14,
+    marginTop: 12,
+    textDecorationLine: 'underline',
+  },
+  authDivider: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+  },
+  sectionBanner: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#e0f2fe',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    marginBottom: 16,
+  },
+  sectionText: {
+    color: '#0369a1',
+    fontWeight: '600',
+    fontSize: 13,
+  },
+  sectionLogout: {
+    color: '#ef4444',
+    fontWeight: '600',
+    fontSize: 13,
+  },
+  taskCard: {
+    backgroundColor: '#ffffff',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  taskLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#cbd5e1',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  checkboxChecked: {
+    backgroundColor: '#10b981',
+    borderColor: '#10b981',
+  },
+  checkboxCheckmark: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  taskTitle: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#1e293b',
+    flex: 1,
+  },
+  taskTitleDone: {
+    textDecorationLine: 'line-through',
+    color: '#94a3b8',
+  },
+  taskRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  badgeDifficulty: {
+    backgroundColor: '#f1f5f9',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+    marginLeft: 12,
+  },
+  badgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  taskDate: {
+    fontSize: 12,
+    color: '#64748b',
+  },
+  editCard: {
+    backgroundColor: '#ffffff',
+    padding: 16,
+    borderRadius: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#6366f1',
+  },
+  editRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  inlineLabel: {
+    fontSize: 13,
+    color: '#64748b',
+    fontWeight: '600',
+  },
+  difficultyContainer: {
+    flexDirection: 'row',
+  },
+  diffDot: {
+    width: 26,
+    height: 26,
+    borderRadius: 6,
+    backgroundColor: '#f1f5f9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 4,
+  },
+  diffDotActive: {
+    backgroundColor: '#6366f1',
+  },
+  diffDotText: {
+    fontSize: 12,
+    color: '#475569',
+  },
+  diffDotTextActive: {
+    color: '#ffffff',
+    fontWeight: '700',
+  },
+  dateTrigger: {
+    backgroundColor: '#f1f5f9',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+  },
+  dateTriggerText: {
+    fontSize: 12,
+    color: '#475569',
+  },
+  actionRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 14,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+  },
+  btnActionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 16,
+  },
+});
