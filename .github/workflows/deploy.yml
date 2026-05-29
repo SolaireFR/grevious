@@ -1,0 +1,63 @@
+name: Build & Push Docker Images (GHCR)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      # =========================
+      # Checkout
+      # =========================
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # =========================
+      # Login GHCR
+      # =========================
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # =========================
+      # VARIABLES
+      # =========================
+      - name: Set lowercase repo owner
+        run: echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+
+      # =========================
+      # API BUILD
+      # =========================
+      - name: Build API image
+        run: |
+          docker build \
+            -t ghcr.io/${OWNER_LC}/my-api:latest \
+            ./api
+
+      - name: Push API image
+        run: |
+          docker push ghcr.io/${OWNER_LC}/my-api:latest
+
+      # =========================
+      # APP BUILD
+      # =========================
+      - name: Build APP image
+        run: |
+          docker build \
+            -t ghcr.io/${OWNER_LC}/my-app:latest \
+            ./app
+
+      - name: Push APP image
+        run: |
+          docker push ghcr.io/${OWNER_LC}/my-app:latest

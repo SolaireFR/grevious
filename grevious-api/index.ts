@@ -1,4 +1,3 @@
-
 import { Hono } from 'hono'
 import { serve } from '@hono/node-server'
 import { cors } from 'hono/cors'
@@ -94,6 +93,67 @@ app.post('/create-section', async (c) => {
     if (!ok) {
       return c.json({ error: 'Erreur lors de la création' }, 500);
     }
+    return c.json({ success: true });
+  } catch (e) {
+    return c.json({ error: 'Requête invalide' }, 400);
+  }
+});
+
+// --- Ajout endpoints modification/suppression tâche ---
+// PATCH /task : { password, index, updates }
+app.patch('/task', async (c) => {
+  try {
+    const body = await c.req.json();
+    const { password, index, updates } = body;
+    if (!password || typeof password !== 'string') {
+      return c.json({ error: 'Mot de passe requis' }, 401);
+    }
+    if (typeof index !== 'number' || !updates || typeof updates !== 'object') {
+      return c.json({ error: 'Index et updates requis' }, 400);
+    }
+    const sessions = readDB();
+    const sessionIndex = sessions.findIndex(s => s.password === password);
+    if (sessionIndex === -1) {
+      return c.json({ error: 'Mot de passe invalide' }, 401);
+    }
+    const tasks = sessions[sessionIndex].tasks;
+    if (index < 0 || index >= tasks.length) {
+      return c.json({ error: 'Index de tâche invalide' }, 400);
+    }
+    // Met à jour la tâche
+    sessions[sessionIndex].tasks[index] = { ...tasks[index], ...updates };
+    sessions[sessionIndex].lastAccess = new Date().toISOString();
+    writeDB(sessions);
+    return c.json({ success: true, task: sessions[sessionIndex].tasks[index] });
+  } catch (e) {
+    return c.json({ error: 'Requête invalide' }, 400);
+  }
+});
+
+// DELETE /task : { password, index }
+app.delete('/task', async (c) => {
+  try {
+    const body = await c.req.json();
+    const { password, index } = body;
+    if (!password || typeof password !== 'string') {
+      return c.json({ error: 'Mot de passe requis' }, 401);
+    }
+    if (typeof index !== 'number') {
+      return c.json({ error: 'Index requis' }, 400);
+    }
+    const sessions = readDB();
+    const sessionIndex = sessions.findIndex(s => s.password === password);
+    if (sessionIndex === -1) {
+      return c.json({ error: 'Mot de passe invalide' }, 401);
+    }
+    const tasks = sessions[sessionIndex].tasks;
+    if (index < 0 || index >= tasks.length) {
+      return c.json({ error: 'Index de tâche invalide' }, 400);
+    }
+    // Supprime la tâche
+    tasks.splice(index, 1);
+    sessions[sessionIndex].lastAccess = new Date().toISOString();
+    writeDB(sessions);
     return c.json({ success: true });
   } catch (e) {
     return c.json({ error: 'Requête invalide' }, 400);
