@@ -8,6 +8,7 @@ import {
   Platform,
   Pressable,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -26,7 +27,7 @@ export default function App() {
     completed: false,
   });
 
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState<{ visible: boolean; mode: 'date' | 'time' } | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,8 +37,6 @@ export default function App() {
 
   const [creatingSection, setCreatingSection] = useState(false);
   const [newPassword, setNewPassword] = useState('');
-
-  const lastTap = useRef(0);
 
   // ---------------- INIT ----------------
   useEffect(() => {
@@ -110,7 +109,7 @@ export default function App() {
     setError(null);
 
     try {
-      const res = await fetch(`${ENV.API_URL}/create-section`, {
+      const res = await fetch(`${ENV.API_URL}/section`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: newPassword }),
@@ -144,11 +143,15 @@ export default function App() {
     });
   };
 
-  const closeEdit = () => setEditingIndex(null);
+  const closeEdit = () => {
+    setEditingIndex(null);
+    setShowDatePicker(null);
+  };
 
   const saveEdit = async () => {
     if (editingIndex === null || !localSecret) return;
     setLoading(true);
+    setError(null);
 
     try {
       const res = await fetch(`${ENV.API_URL}/task`, {
@@ -180,34 +183,10 @@ export default function App() {
     }
   };
 
-  const toggleCompleteExpress = async (item: any, index: number) => {
-    if (!localSecret) return;
-    const updatedStatus = !item.completed;
-    
-    setTasks(prev => {
-      const copy = [...prev];
-      copy[index] = { ...copy[index], completed: updatedStatus };
-      return sortTasks(copy);
-    });
-
-    try {
-      await fetch(`${ENV.API_URL}/task`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          password: localSecret,
-          index,
-          updates: { ...item, completed: updatedStatus },
-        }),
-      });
-    } catch (e) {
-      fetchTasks(localSecret);
-    }
-  };
-
   const deleteTask = async () => {
     if (editingIndex === null || !localSecret) return;
     setLoading(true);
+    setError(null);
 
     try {
       const res = await fetch(`${ENV.API_URL}/task`, {
@@ -224,7 +203,11 @@ export default function App() {
       if (data.success) {
         setTasks(prev => prev.filter((_, i) => i !== editingIndex));
         setEditingIndex(null);
+      } else {
+        setError(data.error);
       }
+    } catch (e: any) {
+      setError(e.message);
     } finally {
       setLoading(false);
     }
@@ -232,6 +215,8 @@ export default function App() {
 
   const addTask = async () => {
     if (!localSecret) return;
+    setLoading(true);
+    setError(null);
 
     const newTask = {
       title: 'Nouvelle tâche',
@@ -241,35 +226,49 @@ export default function App() {
       createdAt: new Date().toISOString(),
     };
 
-    setTasks(prev => sortTasks([newTask, ...prev]));
+    try {
+      const res = await fetch(`${ENV.API_URL}/task`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password: localSecret,
+          task: newTask,
+        }),
+      });
 
-    await fetch(`${ENV.API_URL}/task`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        password: localSecret,
-        index: -1,
-        updates: newTask,
-        insert: true,
-      }),
-    });
+      const data = await res.json();
+
+      if (data.success) {
+        // On recharge depuis le serveur pour garantir l'ordre et obtenir les index réels mis à jour
+        await fetchTasks(localSecret);
+      } else {
+        setError(data.error);
+      }
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleTap = (item: any, index: number) => {
-    const now = Date.now();
-    if (now - lastTap.current < 300) {
-      openEdit(item, index);
-    } else {
-      toggleCompleteExpress(item, index);
+  // ---------------- DATE PICKER CONFIG ----------------
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    if (event.type === 'dismissed') {
+      setShowDatePicker(null);
+      return;
     }
-    lastTap.current = now;
+    
+    if (event.type === 'set' && selectedDate) {
+      const formattedDate = selectedDate.toISOString().split('T')[0];
+      setEditForm(f => ({ ...f, endDate: formattedDate }));
+    }
+    setShowDatePicker(null);
   };
 
-  const handleDateChange = (_: any, selectedDate?: Date) => {
-    setShowDatePicker(Platform.OS === 'ios');
-    if (selectedDate) {
-      setEditForm(f => ({ ...f, endDate: selectedDate.toISOString().split('T')[0] }));
-    }
+  // Helper pour attribuer les couleurs selon la difficulté (1 à 5)
+  const getDifficultyColor = (level: number) => {
+    const colors = ['#facc15', '#f97316', '#ea580c', '#dc2626', '#b91c1c'];
+    return colors[Math.min(Math.max(level - 1, 0), 4)];
   };
 
   const safeTasks = Array.isArray(tasks) ? tasks : [];
@@ -350,50 +349,85 @@ export default function App() {
                 style={[styles.inputField, { marginBottom: 6 }]}
               />
 
+              {/* Ligne Statut */}
+              <View style={styles.editRow}>
+                <Text style={styles.inlineLabel}>Marquer comme terminée</Text>
+                <Switch
+                  value={editForm.completed}
+                  onValueChange={v => setEditForm(f => ({ ...f, completed: v }))}
+                  trackColor={{ false: '#cbd5e1', true: '#10b981' }}
+                  thumbColor={Platform.OS === 'ios' ? undefined : '#ffffff'}
+                />
+              </View>
+
               {/* Ligne Difficulté */}
               <View style={styles.editRow}>
                 <Text style={styles.inlineLabel}>Difficulté</Text>
                 <View style={styles.difficultyContainer}>
-                  {[1, 2, 3, 4, 5].map(num => (
-                    <TouchableOpacity
-                      key={num}
-                      onPress={() => setEditForm(f => ({ ...f, difficulity: num }))}
-                      style={[
-                        styles.diffDot,
-                        editForm.difficulity === num && styles.diffDotActive
-                      ]}
-                    >
-                      <Text style={[
-                        styles.diffDotText,
-                        editForm.difficulity === num && styles.diffDotTextActive
-                      ]}>
-                        {num}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                  {[1, 2, 3, 4, 5].map(num => {
+                    const dotColor = getDifficultyColor(num);
+                    const isActive = editForm.difficulity === num;
+                    return (
+                      <TouchableOpacity
+                        key={num}
+                        onPress={() => setEditForm(f => ({ ...f, difficulity: num }))}
+                        style={[
+                          styles.diffDot,
+                          { backgroundColor: isActive ? dotColor : '#f1f5f9' }
+                        ]}
+                      >
+                        <Text style={[
+                          styles.diffDotText,
+                          { color: isActive ? '#ffffff' : '#475569', fontWeight: isActive ? '700' : '400' }
+                        ]}>
+                          {num}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
               </View>
 
               {/* Ligne Date de fin */}
               <View style={styles.editRow}>
                 <Text style={styles.inlineLabel}>Échéance</Text>
-                <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateTrigger}>
-                  <Text style={styles.dateTriggerText}>
-                    {editForm.endDate ? editForm.endDate : 'Définir une date'}
-                  </Text>
-                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <TouchableOpacity onPress={() => setShowDatePicker({ visible: true, mode: 'date' })} style={styles.dateTrigger}>
+                    <Text style={styles.dateTriggerText}>
+                      {editForm.endDate ? editForm.endDate.split('-').reverse().join('/') : 'Définir une date'}
+                    </Text>
+                  </TouchableOpacity>
+                  {editForm.endDate && (
+                    <TouchableOpacity 
+                      onPress={() => setEditForm(f => ({ ...f, endDate: null }))}
+                      style={{ marginLeft: 8, padding: 4 }}
+                    >
+                      <Text style={{ color: '#ef4444', fontSize: 12 }}>Effacer</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
               </View>
 
-              {showDatePicker && (
-                <DateTimePicker
-                  value={editForm.endDate ? new Date(editForm.endDate) : new Date()}
-                  mode="date"
-                  display="default"
-                  onChange={handleDateChange}
-                />
+              {showDatePicker?.visible && (
+                Platform.OS === 'web' ? (
+                  <TextInput
+                    value={editForm.endDate || ''}
+                    onChangeText={(txt) => setEditForm(f => ({ ...f, endDate: txt || null }))}
+                    style={[styles.inputField, { marginTop: 10 }]}
+                    // @ts-ignore
+                    type="date" 
+                  />
+                ) : (
+                  <DateTimePicker
+                    value={editForm.endDate ? new Date(editForm.endDate) : new Date()}
+                    mode={showDatePicker.mode}
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    onChange={(event, date) => handleDateChange(event, date)}
+                  />
+                )
               )}
 
-              {/* Boutons d'actions du formulaire */}
+              {/* Boutons d'actions */}
               <View style={styles.actionRow}>
                 <TouchableOpacity onPress={deleteTask}>
                   <Text style={[styles.btnActionText, { color: '#ef4444' }]}>Supprimer</Text>
@@ -408,16 +442,15 @@ export default function App() {
             </View>
           ) : (
             /* --- ÉTAT AFFICHAGE COMPACT --- */
-            <Pressable 
-              onPress={() => handleTap(item, index)} 
-              onLongPress={() => openEdit(item, index)}
-            >
-              <View style={styles.taskCard}>
+            <Pressable onPress={() => openEdit(item, index)}>
+              <View style={[styles.taskCard, item.completed && styles.taskCardDone]}>
                 <View style={styles.taskLeft}>
-                  {/* Case à cocher */}
-                  <View style={[styles.checkbox, item.completed && styles.checkboxChecked]}>
-                    {item.completed && <Text style={styles.checkboxCheckmark}>✓</Text>}
-                  </View>
+                  <View 
+                    style={[
+                      styles.difficultyIndicator, 
+                      { backgroundColor: item.completed ? '#cbd5e1' : getDifficultyColor(item.difficulity || 1) }
+                    ]} 
+                  />
                   <Text 
                     numberOfLines={1} 
                     style={[styles.taskTitle, item.completed && styles.taskTitleDone]}
@@ -428,13 +461,15 @@ export default function App() {
 
                 <View style={styles.taskRight}>
                   {item.endDate && (
-                    <Text style={styles.taskDate}>
-                      {item.endDate.split('-').reverse().slice(0, 2).join('/')}
+                    <Text style={[styles.taskDate, item.completed && styles.disabledText]}>
+                      📅 {item.endDate.split('-').reverse().slice(0, 2).join('/')}
                     </Text>
                   )}
-                  <View style={styles.badgeDifficulty}>
-                    <Text style={styles.badgeText}>⭐ {item.difficulity || 1}</Text>
-                  </View>
+                  {item.completed && (
+                    <View style={styles.badgeDone}>
+                      <Text style={styles.badgeDoneText}>Fait</Text>
+                    </View>
+                  )}
                 </View>
               </View>
             </Pressable>
@@ -445,7 +480,7 @@ export default function App() {
   );
 }
 
-// ---------------- STYLES NATIFS REACT NATIVE ----------------
+// ---------------- STYLES ----------------
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -571,29 +606,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
+  taskCardDone: {
+    backgroundColor: '#f1f5f9',
+    borderColor: '#cbd5e1',
+  },
   taskLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
   },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: '#cbd5e1',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  checkboxChecked: {
-    backgroundColor: '#10b981',
-    borderColor: '#10b981',
-  },
-  checkboxCheckmark: {
-    color: 'white',
-    fontSize: 10,
-    fontWeight: 'bold',
+  difficultyIndicator: {
+    width: 6,
+    height: 24,
+    borderRadius: 3,
+    marginRight: 14,
   },
   taskTitle: {
     fontSize: 15,
@@ -609,21 +635,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  badgeDifficulty: {
-    backgroundColor: '#f1f5f9',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 6,
-    marginLeft: 12,
-  },
-  badgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#475569',
-  },
   taskDate: {
     fontSize: 12,
     color: '#64748b',
+    fontWeight: '500',
+  },
+  disabledText: {
+    color: '#94a3b8',
+    textDecorationLine: 'line-through',
+  },
+  badgeDone: {
+    backgroundColor: '#d1fae5',
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+    marginLeft: 10,
+  },
+  badgeDoneText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#065f46',
   },
   editCard: {
     backgroundColor: '#ffffff',
@@ -637,51 +668,45 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 10,
+    marginTop: 12,
   },
   inlineLabel: {
-    fontSize: 13,
-    color: '#64748b',
-    fontWeight: '600',
+    fontSize: 14,
+    color: '#475569',
+    fontWeight: '500',
   },
   difficultyContainer: {
     flexDirection: 'row',
   },
   diffDot: {
-    width: 26,
-    height: 26,
-    borderRadius: 6,
-    backgroundColor: '#f1f5f9',
+    width: 28,
+    height: 28,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 4,
-  },
-  diffDotActive: {
-    backgroundColor: '#6366f1',
+    marginLeft: 5,
   },
   diffDotText: {
     fontSize: 12,
-    color: '#475569',
-  },
-  diffDotTextActive: {
-    color: '#ffffff',
-    fontWeight: '700',
   },
   dateTrigger: {
     backgroundColor: '#f1f5f9',
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
   dateTriggerText: {
-    fontSize: 12,
-    color: '#475569',
+    fontSize: 13,
+    color: '#334155',
+    fontWeight: '500',
   },
   actionRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: 14,
-    paddingTop: 10,
+    marginTop: 16,
+    paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: '#f1f5f9',
   },
