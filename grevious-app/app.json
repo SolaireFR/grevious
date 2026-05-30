@@ -4,6 +4,15 @@
     "slug": "grevious-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "automatic"
+    "userInterfaceStyle": "automatic",
+    "extra": {
+      "eas": {
+        "projectId": "2eb15ef1-32fa-4c7e-ab32-00a0ab7d7941"
+      }
+    },
+    "owner": "solairefr",
+    "android": {
+      "package": "com.solairefr.greviousapp"
+    }
   }
 }
