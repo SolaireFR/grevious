@@ -1,0 +1,22 @@
+services:
+  flutter-dev:
+    # image: ghcr.io/cirruslabs/flutter:stable
+    image: instrumentisto/flutter
+    container_name: flutter_container
+    volumes:
+      - ./src:/app
+      # Cache pour éviter de retélécharger les dépendances à chaque fois
+      - flutter_pub_cache:/root/.pub-cache
+      - gradle_cache:/root/.gradle
+    environment:
+      - FLUTTER_SUPPRESS_ANALYTICS=true
+    working_dir: /app
+    # Garde le conteneur éveillé en arrière-plan
+    tty: true
+    stdin_open: true
+    ports:
+      - "8080:8080" # Expose le port 8080 pour le développement web
+
+volumes:
+  flutter_pub_cache:
+  gradle_cache:

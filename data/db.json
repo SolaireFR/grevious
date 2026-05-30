@@ -2,19 +2,19 @@
   {
     "password": "supersecret",
     "createdAt": "2024-06-01T10:00:00Z",
-    "lastAccess": "2024-06-01T10:00:00Z",
+    "lastAccess": "2026-05-30T23:07:56.407Z",
     "tasks": [
       {
         "title": "Acheter des oeufs",
         "completed": false,
-        "endDate": "2026-06-01T12:00:00Z",
+        "endDate": "2026-06-02",
         "difficulity": 2
       },
       {
-        "title": "Lire un livre",
-        "completed": true,
-        "endDate": "2026-05-20T18:00:00Z",
-        "difficulity": 4
+        "title": "Acheter des oeufs",
+        "completed": false,
+        "endDate": "2026-05-13",
+        "difficulity": 2
       },
       {
         "title": "Écrire du code",
@@ -23,50 +23,5 @@
         "difficulity": 7
       }
     ]
-  },
-  {
-    "password": "secretsuper",
-    "createdAt": "2024-06-01T10:00:00Z",
-    "lastAccess": "2024-06-01T10:00:00Z",
-    "tasks": [
-      {
-        "title": "Acheter des oeufs",
-        "completed": false,
-        "endDate": "2026-06-01T12:00:00Z",
-        "difficulity": 2
-      },
-      {
-        "title": "Lire un livre",
-        "completed": true,
-        "endDate": "2026-05-20T18:00:00Z",
-        "difficulity": 4
-      }
-    ]
-  },
-  {
-    "password": "Wesh",
-    "createdAt": "2024-06-01T10:00:00Z",
-    "lastAccess": "2026-05-30T12:13:00.738Z",
-    "tasks": [
-      {
-        "title": "Nouvelle tâche",
-        "completed": false,
-        "endDate": "fvffvfvff",
-        "difficulity": 5
-      },
-      {
-        "title": "Nouvelle tâche",
-        "completed": false,
-        "difficulity": 1,
-        "endDate": "ccdcdcdc",
-        "createdAt": "2026-05-29T18:23:14.338Z"
-      }
-    ]
-  },
-  {
-    "password": "Wesh2",
-    "tasks": [],
-    "createdAt": "2026-05-29T14:16:52.158Z",
-    "lastAccess": "2026-05-29T14:16:52.201Z"
   }
 ]

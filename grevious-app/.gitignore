@@ -1,43 +1,55 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+# -------------------------------------------------------------------------
+# Flutter / Dart - Fichiers générés et caches
+# -------------------------------------------------------------------------
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
 
-# dependencies
-node_modules/
+# -------------------------------------------------------------------------
+# Android spécifique (Gradle, APKs locaux, Keystores)
+# -------------------------------------------------------------------------
+android/**/*.iml
+android/.gradle/
+android/local.properties
+android/captures/
+android/gradlew
+android/gradlew.bat
+android/gradle/wrapper/gradle-wrapper.jar
 
-# Expo
-.expo/
-dist/
-web-build/
-expo-env.d.ts
+# Ignorer les builds d'APK et bundles générés localement
+*.apk
+*.ap_
+*.aab
 
-# Native
-.kotlin/
-*.orig.*
+# Sécurité : Ne JAMAIS push vos clés de signature de production
 *.jks
-*.p8
+*.keystore
 *.p12
-*.key
-*.mobileprovision
 
-# Metro
-.metro-health-check*
+# -------------------------------------------------------------------------
+# Éditeurs de code (VS Code & Android Studio)
+# -------------------------------------------------------------------------
+.vscode/extensions.json
+# Optionnel : décommentez la ligne suivante si vous ne voulez pas partager vos tâches VS Code
+# .vscode/tasks.json
 
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
+.idea/
+*.iml
 
-# macOS
+# -------------------------------------------------------------------------
+# Système et Environnement
+# -------------------------------------------------------------------------
 .DS_Store
-*.pem
+Thumbs.db
 
-# local env files
-.env*.local
+# Fichiers de variables d'environnement (Contenant vos clés secrètes d'API)
+.env
+.env.local
+.env.*.local
 
-# typescript
-*.tsbuildinfo
-
-example
-
-# generated native folders
-/ios
-/android
+# Cache Docker local (si vous avez placé le gitignore à la racine globale)
+.gradle/

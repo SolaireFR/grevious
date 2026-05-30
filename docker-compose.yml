@@ -6,21 +6,21 @@ services:
     environment:
       APP_ENV: production
       PORT: 3000
-      CORS_ORIGIN: "http://localhost:19006"
+      CORS_ORIGIN: "http://localhost:8080"
     volumes:
       - ./data/db.json:/data/db.json
     ports:
       - "3000:3000"
 
-  app:
-    container_name: grevious-app
-    build:
-      context: ./grevious-app
-    environment:
-      API_URL: http://localhost:3000
-      APP_ENV: production
-    ports:
-      - "19006:19006"
-      - "8081:8081"
-    depends_on:
-      - api
+  # app:
+    # container_name: grevious-app
+    # build:
+    #   context: ./grevious-app
+    # environment:
+    #   API_URL: http://localhost:3000
+    #   APP_ENV: production
+    # ports:
+    #   - "19006:19006"
+    #   - "8081:8081"
+    # depends_on:
+    #   - api
