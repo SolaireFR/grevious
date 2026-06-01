@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 // ---------------- CONFIGURATION ----------------
-const String apiUrl = "http://localhost:3000"; // URL de votre backend (adapter si nécessaire)
+const String apiUrl = "https://grievous-api.universalgate.fr"; // URL de votre backend (adapter si nécessaire)
 
 void main() {
   runApp(const MyApp());
