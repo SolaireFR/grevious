@@ -3,6 +3,10 @@
 # ==========================================
 FROM debian:stable-slim AS build-env
 
+# Configuration pour éviter les alertes et blocages liés à root & analytics
+ENV FLUTTER_SUPPRESS_ANALYTICS=true
+ENV PURGE_PERSISTED_DART_DATA=true
+
 # Installation des prérequis système
 RUN apt-get update && apt-get install -y curl git unzip xz-utils libglu1-mesa && apt-get clean
 
@@ -12,17 +16,19 @@ RUN git clone https://github.com/flutter/flutter.git -b stable /usr/local/flutte
 # Ajout de Flutter au PATH
 ENV PATH="/usr/local/flutter/bin:/usr/local/flutter/bin/cache/dart-sdk/bin:${PATH}"
 
-# Activation du support Web et exécution d'un premier doctor pour valider
-RUN flutter doctor
-
 # Définition du dossier de travail
 WORKDIR /app
 
-# Copie du projet (en respectant votre structure src/)
+# Copie du projet (votre code source)
 COPY ./src .
 
-# Récupération des dépendances et compilation pour le Web
+# Récupération des dépendances
 RUN flutter pub get
+
+# CORRECTION : On s'assure que le projet est configuré pour supporter le Web
+RUN flutter create . --platforms web
+
+# Compilation finale pour le Web
 RUN flutter build web --release
 
 # ==========================================
