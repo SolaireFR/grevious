@@ -1,8 +1,8 @@
 services:
   api:
-    container_name: grevious-api
+    container_name: grievous-api
     build:
-      context: ./grevious-api
+      context: ./grievous-api
     environment:
       APP_ENV: production
       PORT: 3000
@@ -13,9 +13,9 @@ services:
       - "3000:3000"
 
   # app:
-    # container_name: grevious-app
+    # container_name: grievous-app
     # build:
-    #   context: ./grevious-app
+    #   context: ./grievous-app
     # environment:
     #   API_URL: http://localhost:3000
     #   APP_ENV: production
