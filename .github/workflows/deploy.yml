@@ -42,12 +42,12 @@ jobs:
       - name: Build API image
         run: |
           docker build \
-            -t ghcr.io/${OWNER_LC}/grevious-api:latest \
-            ./grevious-api
+            -t ghcr.io/${OWNER_LC}/grievous-api:latest \
+            ./grievous-api
 
       - name: Push API image
         run: |
-          docker push ghcr.io/${OWNER_LC}/grevious-api:latest
+          docker push ghcr.io/${OWNER_LC}/grievous-api:latest
 
       # =========================
       # APP BUILD
@@ -55,9 +55,9 @@ jobs:
       - name: Build APP image
         run: |
           docker build \
-            -t ghcr.io/${OWNER_LC}/grevious-app:latest \
-            ./grevious-app
+            -t ghcr.io/${OWNER_LC}/grievous-app:latest \
+            ./grievous-app
 
       - name: Push APP image
         run: |
-          docker push ghcr.io/${OWNER_LC}/grevious-app:latest
+          docker push ghcr.io/${OWNER_LC}/grievous-app:latest

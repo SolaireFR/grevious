@@ -1,7 +1,7 @@
 {
-  "name": "grevious-api",
+  "name": "grievous-api",
   "version": "1.0.0",
-  "description": "Api de l'application Grevious",
+  "description": "Api de l'application Grievous",
   "license": "ISC",
   "author": "Morgan SECRETIN",
   "type": "commonjs",
